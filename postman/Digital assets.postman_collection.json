@@ -1,0 +1,1256 @@
+{
+	"info": {
+		"_postman_id": "0a7beb86-d4e4-4d6e-a5b0-41d4c9ace3f1",
+		"name": "Digital assets",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Generate OTDS token with Core Content client",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;\r",
+							"\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.environment.set(\"cc_token\", jsonData.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "{{grant_type_pw}}",
+							"type": "default"
+						},
+						{
+							"key": "client_id",
+							"value": "{{ext_core_content_app_confclient_id}}",
+							"type": "default"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{ext_core_content_app_confclient_secret}}",
+							"type": "default"
+						},
+						{
+							"key": "username",
+							"value": "{{user_name}}",
+							"type": "default"
+						},
+						{
+							"key": "password",
+							"value": "{{tenant_user_password}}",
+							"type": "default"
+						},
+						{
+							"key": "client_data",
+							"value": "subName={{core_content_sub_name}}",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://{{api_host}}/tenants/{{tenant_id}}/oauth2/token",
+					"protocol": "https",
+					"host": [
+						"{{api_host}}"
+					],
+					"path": [
+						"tenants",
+						"{{tenant_id}}",
+						"oauth2",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Upload a file into CSS",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"Status code is 201\"] = responseCode.code === 201;\r",
+							"\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.environment.set(\"blob_id\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{cc_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/spaladug/Downloads/test.png"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://{{css_url}}/v3/files/fromStream?tenant={{tenant_id}}",
+					"protocol": "https",
+					"host": [
+						"{{css_url}}"
+					],
+					"path": [
+						"v3",
+						"files",
+						"fromStream"
+					],
+					"query": [
+						{
+							"key": "tenant",
+							"value": "{{tenant_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get enterprise volume",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieve enterprise volume successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"\r",
+							"var enterpriseVolumeId = jsonData._embedded.collection[0].id;\r",
+							"pm.environment.set(\"enterprise_volume_id\", enterpriseVolumeId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{cc_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{cms_url}}/instances/folder/ccmapp_enterprise_volume?sortby=create_time desc",
+					"protocol": "https",
+					"host": [
+						"{{cms_url}}"
+					],
+					"path": [
+						"instances",
+						"folder",
+						"ccmapp_enterprise_volume"
+					],
+					"query": [
+						{
+							"key": "sortby",
+							"value": "create_time desc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get digital asset library folder",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieved digital asset library folder\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"\r",
+							"var parentFolderId = jsonData._embedded.collection[0].id;\r",
+							"pm.environment.set(\"parent_folder_id\", parentFolderId);\r",
+							"pm.environment.set(\"folder_id\", parentFolderId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{cc_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{cms_url}}/instances/folder/cms_folder/{{enterprise_volume_id}}/items?filter=name like 'Digital asset library'",
+					"protocol": "https",
+					"host": [
+						"{{cms_url}}"
+					],
+					"path": [
+						"instances",
+						"folder",
+						"cms_folder",
+						"{{enterprise_volume_id}}",
+						"items"
+					],
+					"query": [
+						{
+							"key": "filter",
+							"value": "name like 'Digital asset library'"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create folder",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Created folder successfully\", () => {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.environment.set(\"folder_id\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let myDate = new Date();\r",
+							"let myTimeStamp = myDate.toISOString().slice(0,19).replace(/-/g,\"\");\r",
+							"pm.environment.set(\"folder_name\", \"Folder_\" + myTimeStamp);\r",
+							"console.log(\"Folder Name=\" + (pm.environment.get(\"folder_name\")))"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{cc_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"{{folder_name}}\",\r\n    \"description\": \"Sample folder\",\r\n    \"parent_folder_id\":\"{{parent_folder_id}}\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{cms_url}}/instances/folder/cms_folder",
+					"protocol": "https",
+					"host": [
+						"{{cms_url}}"
+					],
+					"path": [
+						"instances",
+						"folder",
+						"cms_folder"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create asset",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Created asset successfully\", () => {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.environment.set(\"asset_id\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let myDate = new Date();\r",
+							"let myTimeStamp = myDate.toISOString().slice(0,19).replace(/-/g,\"\");\r",
+							"pm.environment.set(\"asset_name\", \"Asset_\" + myTimeStamp);\r",
+							"console.log(\"Asset Name=\" + (pm.environment.get(\"asset_name\")))"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{cc_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"{{asset_name}}\",\r\n    \"description\": \"Sample file upload\",\r\n    \"type\": \"ccm1_dam_brand_assets\",\r\n    \"renditions\": [{\"blob_id\":\"{{blob_id}}\", \r\n        \"rendition_type\":\"primary\",\r\n        \"name\":\"my content file\",\r\n        \"source\": \"FILE_ID\"\r\n        }\r\n    ],\r\n    \"parent_folder_id\":\"{{folder_id}}\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{cms_url}}/instances/file/cms_file",
+					"protocol": "https",
+					"host": [
+						"{{cms_url}}"
+					],
+					"path": [
+						"instances",
+						"file",
+						"cms_file"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate OTDS token digital assets client",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.environment.set(\"token\", jsonData.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "{{grant_type_pw}}",
+							"type": "default"
+						},
+						{
+							"key": "client_id",
+							"value": "{{ext_digitalassets_app_confclient_id}}",
+							"type": "default"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{ext_digitalassets_app_confclient_secret}}",
+							"type": "default"
+						},
+						{
+							"key": "username",
+							"value": "{{user_name}}",
+							"type": "default"
+						},
+						{
+							"key": "password",
+							"value": "{{tenant_user_password}}",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://{{api_host}}/tenants/{{tenant_id}}/oauth2/token",
+					"protocol": "https",
+					"host": [
+						"{{api_host}}"
+					],
+					"path": [
+						"tenants",
+						"{{tenant_id}}",
+						"oauth2",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Asset Profiles",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Asset profiles retrieved successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{digitalassets_url}}/v1/profiles",
+					"protocol": "https",
+					"host": [
+						"{{digitalassets_url}}"
+					],
+					"path": [
+						"v1",
+						"profiles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Asset",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Asset retrieved successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"\r",
+							"var name = jsonData.name;\r",
+							"pm.environment.set(\"asset_name\", name);\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){}, 60000);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{digitalassets_url}}/v1/assets/{{asset_id}}",
+					"protocol": "https",
+					"host": [
+						"{{digitalassets_url}}"
+					],
+					"path": [
+						"v1",
+						"assets",
+						"{{asset_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Asset with default DS urls",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieved asset with default DS urls successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"\r",
+							"var preview_url = jsonData._links[\"urn:eim:linkrel:profile:preview\"].href;\r",
+							"pm.environment.set(\"preview_url\", preview_url);\r",
+							"\r",
+							"var thumbnail_url = jsonData._links[\"urn:eim:linkrel:profile:thumbnail\"].href;\r",
+							"pm.environment.set(\"thumbnail_url\", thumbnail_url);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{digitalassets_url}}/v1/assets/{{asset_id}}?load_default_ds_urls=true",
+					"protocol": "https",
+					"host": [
+						"{{digitalassets_url}}"
+					],
+					"path": [
+						"v1",
+						"assets",
+						"{{asset_id}}"
+					],
+					"query": [
+						{
+							"key": "load_default_ds_urls",
+							"value": "true"
+						},
+						{
+							"key": null,
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Invoke Preview DS url",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieved preview content successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{preview_url}}",
+					"host": [
+						"{{preview_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Invoke Thumbnail DS url",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieved thumbnail content successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{thumbnail_url}}",
+					"host": [
+						"{{thumbnail_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Asset with profile DS urls",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieved asset with profile DS urls successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{digitalassets_url}}/v1/assets/{{asset_id}}?load_profile_ds_urls=true",
+					"protocol": "https",
+					"host": [
+						"{{digitalassets_url}}"
+					],
+					"path": [
+						"v1",
+						"assets",
+						"{{asset_id}}"
+					],
+					"query": [
+						{
+							"key": "load_profile_ds_urls",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Asset with specific profile DS urls",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieved asset with specific profile DS urls successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{digitalassets_url}}/v1/assets/{{asset_id}}?load_profile_ds_urls=true&profile_ds_urls_to_return={{profile_ds_urls_to_return}}",
+					"protocol": "https",
+					"host": [
+						"{{digitalassets_url}}"
+					],
+					"path": [
+						"v1",
+						"assets",
+						"{{asset_id}}"
+					],
+					"query": [
+						{
+							"key": "load_profile_ds_urls",
+							"value": "true"
+						},
+						{
+							"key": "profile_ds_urls_to_return",
+							"value": "{{profile_ds_urls_to_return}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Assets by name",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieved asset by name successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"\r",
+							"var preview_url = jsonData.assets[0]._links[\"urn:eim:linkrel:profile:preview\"].href;\r",
+							"pm.environment.set(\"preview_url\", preview_url);\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{digitalassets_url}}/v1/assets?filter=name:{{asset_name}}&load_default_ds_urls=true",
+					"protocol": "https",
+					"host": [
+						"{{digitalassets_url}}"
+					],
+					"path": [
+						"v1",
+						"assets"
+					],
+					"query": [
+						{
+							"key": "filter",
+							"value": "name:{{asset_name}}"
+						},
+						{
+							"key": "load_default_ds_urls",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Assets by folder path",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieved asset by folder path successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{digitalassets_url}}/v1/assets?filter=path:{{folder_path}}/{{folder_name}}",
+					"protocol": "https",
+					"host": [
+						"{{digitalassets_url}}"
+					],
+					"path": [
+						"v1",
+						"assets"
+					],
+					"query": [
+						{
+							"key": "filter",
+							"value": "path:{{folder_path}}/{{folder_name}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Assets by name and folder path",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieved asset by name and folder path successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{digitalassets_url}}/v1/assets?filter=name:{{asset_name}},path:{{folder_path}}/{{folder_name}}",
+					"protocol": "https",
+					"host": [
+						"{{digitalassets_url}}"
+					],
+					"path": [
+						"v1",
+						"assets"
+					],
+					"query": [
+						{
+							"key": "filter",
+							"value": "name:{{asset_name}},path:{{folder_path}}/{{folder_name}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Folder Children",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieved folder children successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{digitalassets_url}}/v1/folders/{{folder_id}}/children?type=FOLDER_ASSET&page=1&items_per_page=25",
+					"protocol": "https",
+					"host": [
+						"{{digitalassets_url}}"
+					],
+					"path": [
+						"v1",
+						"folders",
+						"{{folder_id}}",
+						"children"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "FOLDER_ASSET"
+						},
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "items_per_page",
+							"value": "25"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Assets from Folder",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieved assets from folder successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"var damObjects = jsonData.dam_objects;\r",
+							"var url;\r",
+							"for (var i=0; i < damObjects.length ; i++){\r",
+							"  var category = damObjects[i].category;\r",
+							"  if(category == \"file\")  {\r",
+							"      var contentType = damObjects[i].content_type;\r",
+							"      if (contentType == \"IMAGE\")\r",
+							"      {\r",
+							"          if (damObjects[i]._links[\"urn:eim:linkrel:profile:web quality\"] != null)\r",
+							"          {\r",
+							"              var renditionFound = false;\r",
+							"              var renditions = damObjects[i].renditions;\r",
+							"              for (var j=0; j < renditions.length ; j++)\r",
+							"              {\r",
+							"                  if(\"preview\" == renditions[j].name)\r",
+							"                  {\r",
+							"                      renditionFound = true\r",
+							"                      break;\r",
+							"                  }                \r",
+							"              }\r",
+							"              if(renditionFound)\r",
+							"              {\r",
+							"                  url = damObjects[i]._links[\"urn:eim:linkrel:profile:web quality\"].href;\r",
+							"                  pm.environment.set(\"web_quality_ds_url\", url);\r",
+							"                  break;\r",
+							"              }\r",
+							"          }\r",
+							"      }\r",
+							"    }\r",
+							"}\r",
+							"\r",
+							"if (url == null)\r",
+							"{\r",
+							"    console.log(\"No 'web quality' ds url found in the response\");\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{digitalassets_url}}/v1/folders/{{folder_id}}/children?type=ASSET&page=1&items_per_page=25&load_default_ds_urls=true&load_profile_ds_urls=true&profile_urls_to_return=web quality",
+					"protocol": "https",
+					"host": [
+						"{{digitalassets_url}}"
+					],
+					"path": [
+						"v1",
+						"folders",
+						"{{folder_id}}",
+						"children"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "ASSET"
+						},
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "items_per_page",
+							"value": "25"
+						},
+						{
+							"key": "load_default_ds_urls",
+							"value": "true"
+						},
+						{
+							"key": "load_profile_ds_urls",
+							"value": "true"
+						},
+						{
+							"key": "profile_urls_to_return",
+							"value": "web quality"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Invoke profile DS url",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieved asset content successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{web_quality_ds_url}}",
+					"host": [
+						"{{web_quality_ds_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Asset with custom DS url",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Retrieved asset with custom DS url successfully\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{digitalassets_url}}/v1/assets/{{asset_id}}?custom_ds_url_options=rr_y,fv_y,crop_{{crop_dimensions}},op_jpg,cs_srgb",
+					"protocol": "https",
+					"host": [
+						"{{digitalassets_url}}"
+					],
+					"path": [
+						"v1",
+						"assets",
+						"{{asset_id}}"
+					],
+					"query": [
+						{
+							"key": "custom_ds_url_options",
+							"value": "rr_y,fv_y,cr_99x80x98x47,op_JPG,cs_sRGB"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete folder",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Deleted folder successfully\", () => {\r",
+							"    pm.response.to.have.status(204);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{cc_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://{{cms_url}}/instances/folder/cms_folder/{{folder_id}}?recursive=true",
+					"protocol": "https",
+					"host": [
+						"{{cms_url}}"
+					],
+					"path": [
+						"instances",
+						"folder",
+						"cms_folder",
+						"{{folder_id}}"
+					],
+					"query": [
+						{
+							"key": "recursive",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "cc_token",
+			"value": ""
+		},
+		{
+			"key": "blob_id",
+			"value": ""
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "cms_folder_name",
+			"value": ""
+		},
+		{
+			"key": "folder_name",
+			"value": ""
+		},
+		{
+			"key": "asset_name",
+			"value": ""
+		}
+	]
+}
